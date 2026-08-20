@@ -298,18 +298,6 @@
     pointer-events:auto;
   }
 
-  .quote{
-    font-family:'PT Serif', serif;
-    font-style:italic;
-    font-weight:400;
-    font-size:clamp(28px, 5vw, 52px);
-    line-height:1.45;
-    max-width:16ch;
-    color:var(--text-main);
-    text-shadow:0 2px 24px rgba(0,0,0,.6);
-  }
-  .quote .accent{ color:var(--ember); font-style:normal; }
-
   .page-text{
     font-family:'PT Serif', serif;
     font-style:italic;
@@ -517,8 +505,8 @@
 
   @media (max-width:700px){
     .badges{ flex-direction:column; align-items:center; gap:10px; padding-top:22px; }
-    .left-stack{ position:static; order:-1; align-items:center; margin-bottom:4px; }
-    .right-stack{ position:static; order:3; align-items:center; margin-top:8px; }
+    .left-stack{ position:relative; order:-1; align-items:center; margin-bottom:4px; }
+    .right-stack{ position:relative; order:3; align-items:center; margin-top:8px; }
     .badge{ padding:12px 20px; font-size:13.5px; border-radius:14px; }
   }
 
@@ -601,12 +589,7 @@
     </section>
 
     <section class="page" id="calm">
-      <div class="essay">
-        <p>Я ненавижу моменты, когда мне приходится спрашивать: «А можно с вами?», «Подождите меня, пожалуйста», «Почему меня не позвали?», «А мне расскажите?». Ненавижу это ощущение, когда ты вроде бы находишься среди людей, но внутри чувствуешь себя чужим. Будто ты не часть компании, а человек, который постоянно должен напоминать о своём существовании.</p>
-        <p>Каждый раз, когда я задаю эти вопросы, внутри появляется странное чувство пустоты. Начинаешь думать: «Почему обо мне забыли?», «Почему я должен проситься туда, где мне вроде бы должны быть рады?». Становится грустно от того, что иногда приходится бороться за внимание людей, которые должны сами хотеть видеть тебя рядом.</p>
-        <p>Самое тяжёлое — когда это повторяется снова и снова. Когда каждый день ты сталкиваешься с ощущением, что другим проще проводить время без тебя. Со временем чувствуешь себя ненужным и одиноким даже среди друзей.</p>
-        <p>Но настоящая дружба не должна вызывать такие чувства. В дружбе не должно быть постоянного страха: «А меня точно хотят видеть?», «А мне можно присоединиться?». Настоящие друзья не заставляют человека каждый раз просить место рядом с ними. Они сами зовут, интересуются, ждут и показывают, что твоё присутствие для них важно.</p>
-      </div>
+      <p class="page-text">Контент в скором времени будет добавляться.</p>
     </section>
 
     <section class="page" id="lll">
@@ -653,49 +636,106 @@
           <audio class="audio-el" src="track2.mp3" preload="metadata"></audio>
         </div>
 
-        <div class="track track-pending" data-track="3">
-          <button class="play-btn" type="button" disabled aria-disabled="true">▶</button>
+        <div class="track" data-track="3">
+          <button class="play-btn" type="button">▶</button>
           <div class="track-body">
             <div class="track-top">
               <span class="track-name">stalk ur socials</span>
               <span class="track-artist">s0rrow</span>
+              <span class="eq"><span></span><span></span><span></span></span>
             </div>
             <div class="scrub">
-              <span class="time time-cur">—:—</span>
-              <input type="range" class="seek" min="0" max="100" value="0" step="0.1" disabled>
-              <span class="time time-total">скоро</span>
+              <span class="time time-cur">0:00</span>
+              <input type="range" class="seek" min="0" max="100" value="0" step="0.1">
+              <span class="time time-total">0:00</span>
             </div>
           </div>
+          <audio class="audio-el" src="track3.mp3" preload="metadata"></audio>
         </div>
 
-        <div class="track track-pending" data-track="4">
-          <button class="play-btn" type="button" disabled aria-disabled="true">▶</button>
+        <div class="track" data-track="4">
+          <button class="play-btn" type="button">▶</button>
           <div class="track-body">
             <div class="track-top">
               <span class="track-name">Демоны</span>
               <span class="track-artist">Три дня дождя</span>
+              <span class="eq"><span></span><span></span><span></span></span>
             </div>
             <div class="scrub">
-              <span class="time time-cur">—:—</span>
-              <input type="range" class="seek" min="0" max="100" value="0" step="0.1" disabled>
-              <span class="time time-total">скоро</span>
+              <span class="time time-cur">0:00</span>
+              <input type="range" class="seek" min="0" max="100" value="0" step="0.1">
+              <span class="time time-total">0:00</span>
             </div>
           </div>
+          <audio class="audio-el" src="track4.mp3" preload="metadata"></audio>
         </div>
 
-        <div class="track track-pending" data-track="5">
-          <button class="play-btn" type="button" disabled aria-disabled="true">▶</button>
+        <div class="track" data-track="5">
+          <button class="play-btn" type="button">▶</button>
           <div class="track-body">
             <div class="track-top">
               <span class="track-name">Я устал</span>
               <span class="track-artist">1.Kla$</span>
+              <span class="eq"><span></span><span></span><span></span></span>
             </div>
             <div class="scrub">
-              <span class="time time-cur">—:—</span>
-              <input type="range" class="seek" min="0" max="100" value="0" step="0.1" disabled>
-              <span class="time time-total">скоро</span>
+              <span class="time time-cur">0:00</span>
+              <input type="range" class="seek" min="0" max="100" value="0" step="0.1">
+              <span class="time time-total">0:00</span>
             </div>
           </div>
+          <audio class="audio-el" src="track5.mp3" preload="metadata"></audio>
+        </div>
+
+        <div class="track" data-track="6">
+          <button class="play-btn" type="button">▶</button>
+          <div class="track-body">
+            <div class="track-top">
+              <span class="track-name">Кис-кис, кис-кис, я котик, ты котик</span>
+              <span class="track-artist">Жанулька</span>
+              <span class="eq"><span></span><span></span><span></span></span>
+            </div>
+            <div class="scrub">
+              <span class="time time-cur">0:00</span>
+              <input type="range" class="seek" min="0" max="100" value="0" step="0.1">
+              <span class="time time-total">0:00</span>
+            </div>
+          </div>
+          <audio class="audio-el" src="track6.mp3" preload="metadata"></audio>
+        </div>
+
+        <div class="track" data-track="7">
+          <button class="play-btn" type="button">▶</button>
+          <div class="track-body">
+            <div class="track-top">
+              <span class="track-name">Я бью женщин и детей</span>
+              <span class="track-artist">Валентин Стрыкало</span>
+              <span class="eq"><span></span><span></span><span></span></span>
+            </div>
+            <div class="scrub">
+              <span class="time time-cur">0:00</span>
+              <input type="range" class="seek" min="0" max="100" value="0" step="0.1">
+              <span class="time time-total">0:00</span>
+            </div>
+          </div>
+          <audio class="audio-el" src="track7.mp3" preload="metadata"></audio>
+        </div>
+
+        <div class="track" data-track="8">
+          <button class="play-btn" type="button">▶</button>
+          <div class="track-body">
+            <div class="track-top">
+              <span class="track-name">Все мои друзья</span>
+              <span class="track-artist">Валентин Стрыкало</span>
+              <span class="eq"><span></span><span></span><span></span></span>
+            </div>
+            <div class="scrub">
+              <span class="time time-cur">0:00</span>
+              <input type="range" class="seek" min="0" max="100" value="0" step="0.1">
+              <span class="time time-total">0:00</span>
+            </div>
+          </div>
+          <audio class="audio-el" src="track8.mp3" preload="metadata"></audio>
         </div>
       </div>
     </section>
