@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title></title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital@0;1&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-1:      #050505;
+    --bg-2:      #1b1b1d;
+    --bg-3:      #101012;
+    --text-main: #f5f3ee;
+    --text-mute: #83848a;
+    --ember:     #c98f56;
+    --ember-dim: #6f5236;
+    --line:      rgba(255,255,255,0.10);
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html,body{
+    height:100%;
+    background:var(--bg-1);
+    overflow-x:hidden;
+  }
+
+  body{
+    font-family:'Manrope', sans-serif;
+    color:var(--text-main);
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+
+  /* ================= BACKGROUND — black & grey, snowfall ================= */
+  /* No negative z-index anywhere: background sits first in the DOM at z-index:0,
+     content sits after it at z-index:1 — this keeps stacking simple and reliable. */
+
+  .bg{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.05), transparent 55%),
+      linear-gradient(180deg, var(--bg-1) 0%, var(--bg-3) 50%, var(--bg-2) 100%);
+    background-size:100% 220%;
+    animation:bg-shift 26s ease-in-out infinite;
+  }
+  @keyframes bg-shift{
+    0%,100%{ background-position:50% 0%; }
+    50%{ background-position:50% 100%; }
+  }
+
+  .vignette{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    background:radial-gradient(ellipse at 50% 40%, transparent 40%, rgba(0,0,0,.55) 100%);
+  }
+
+  .snow{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    overflow:hidden;
+    pointer-events:none;
+  }
+  .flake{
+    position:absolute;
+    top:-6vh;
+    border-radius:50%;
+    background:#fff;
+    animation-name:snow-fall;
+    animation-timing-function:linear;
+    animation-iteration-count:infinite;
+  }
+  @keyframes snow-fall{
+    0%{   transform:translate(0,0);              opacity:0; }
+    8%{   opacity:1; }
+    92%{  opacity:.55; }
+    100%{ transform:translate(var(--drift), 112vh); opacity:0; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .bg, .flake{ animation:none; }
+  }
+
+  /* ================= NAV ================= */
+  .badges{
+    width:100%;
+    position:relative;
+    display:flex;
+    justify-content:center;
+    padding:30px 24px 0;
+    z-index:2;
+    min-height:52px;
+  }
+  .badge-group{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:14px;
+  }
+  .left-stack{
+    position:absolute;
+    left:24px;
+    top:30px;
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+
+  .right-stack{
+    position:absolute;
+    right:24px;
+    top:30px;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:8px;
+  }
+  .right-stack-label{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    text-align:center;
+    color:var(--text-mute);
+  }
+  .ip-badges{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:8px;
+  }
+  .ip-badge{
+    appearance:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:9px 14px;
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    backdrop-filter:blur(8px);
+    box-shadow:0 4px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+    font-family:'Manrope', sans-serif;
+    font-variant-numeric:tabular-nums;
+    font-size:12.5px;
+    font-weight:600;
+    letter-spacing:.01em;
+    color:var(--text-main);
+    white-space:nowrap;
+    cursor:pointer;
+    transition:transform .18s ease, border-color .25s ease, box-shadow .25s ease;
+  }
+  .ip-badge:hover{
+    transform:translateY(-1px);
+    border-color:rgba(255,255,255,.24);
+    box-shadow:0 6px 20px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.07);
+  }
+  .ip-badge:active{ transform:scale(.96) translateY(0); }
+  .ip-badge .ip-dot{
+    width:6px; height:6px; border-radius:50%;
+    background:#5fd97a;
+    box-shadow:0 0 6px 1px rgba(95,217,122,.6);
+    flex:none;
+  }
+  .ip-badge .copy-mark{
+    flex:none;
+    font-size:11px;
+    opacity:.5;
+  }
+  .ip-badge.copied{ border-color:var(--ember-dim); }
+  .ip-badge.copied .copy-mark{ opacity:1; color:var(--ember); }
+
+  .ip-toast{
+    font-size:11px;
+    color:var(--ember);
+    opacity:0;
+    transition:opacity .3s ease;
+    pointer-events:none;
+  }
+  .ip-toast.show{ opacity:1; }
+
+  .badge{
+    appearance:none;
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+    padding:14px 26px;
+    border:1.5px solid var(--line);
+    border-radius:16px;
+    background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    backdrop-filter:blur(8px);
+    box-shadow:0 4px 18px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.05);
+    font-family:'Manrope', sans-serif;
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:.02em;
+    color:var(--text-main);
+    white-space:nowrap;
+    cursor:pointer;
+    text-decoration:none;
+    transition:transform .18s ease, border-color .25s ease, color .25s ease,
+               background .25s ease, box-shadow .25s ease;
+  }
+  .badge:hover{
+    transform:translateY(-2px);
+    border-color:rgba(255,255,255,.24);
+    box-shadow:0 8px 24px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.07);
+  }
+  .badge:active{ transform:scale(.95) translateY(0); }
+  .badge.pressed{ animation:pulse .5s ease; }
+  @keyframes pulse{
+    0%{ transform:scale(1); }
+    35%{ transform:scale(.92); }
+    100%{ transform:scale(1); }
+  }
+
+  .badge.yt{
+    align-self:flex-start;
+    padding:9px 16px;
+    font-size:13px;
+    gap:7px;
+    color:#fff;
+    border-color:rgba(255,255,255,.08);
+    background:linear-gradient(180deg, #ff2f3d 0%, #d4001f 100%);
+    box-shadow:0 4px 18px rgba(180,0,20,.35), inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  .badge.yt:hover{
+    border-color:rgba(255,255,255,.2);
+    box-shadow:0 8px 26px rgba(180,0,20,.5), inset 0 1px 0 rgba(255,255,255,.16);
+  }
+  .badge.yt svg{ flex:none; display:block; }
+
+  .yt-toast{
+    position:absolute;
+    left:0;
+    top:100%;
+    margin-top:6px;
+    font-size:11px;
+    color:var(--text-mute);
+    opacity:0;
+    transition:opacity .3s ease;
+    pointer-events:none;
+    white-space:nowrap;
+  }
+  .yt-toast.show{ opacity:1; color:var(--ember); }
+
+  .badge.accent,
+  .badge.active{
+    color:var(--ember);
+    border-color:var(--ember-dim);
+    background:linear-gradient(180deg, rgba(201,143,86,.16), rgba(201,143,86,.05));
+    box-shadow:0 4px 18px rgba(0,0,0,.4), 0 0 0 1px rgba(201,143,86,.15) inset;
+  }
+  .badge .dot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--ember);
+    box-shadow:0 0 8px 2px rgba(201,143,86,.65);
+    flex:none;
+  }
+
+  /* ================= PAGES ================= */
+  .pages{
+    flex:1;
+    position:relative;
+    width:100%;
+    z-index:1;
+  }
+
+  .page{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    gap:24px;
+    text-align:center;
+    padding:60px 32px;
+    opacity:0;
+    transform:translateY(14px);
+    pointer-events:none;
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  .page.show{
+    opacity:1;
+    transform:translateY(0);
+    pointer-events:auto;
+  }
+
+  .quote{
+    font-family:'PT Serif', serif;
+    font-style:italic;
+    font-weight:400;
+    font-size:clamp(28px, 5vw, 52px);
+    line-height:1.45;
+    max-width:16ch;
+    color:var(--text-main);
+    text-shadow:0 2px 24px rgba(0,0,0,.6);
+  }
+  .quote .accent{ color:var(--ember); font-style:normal; }
+
+  .page-text{
+    font-family:'PT Serif', serif;
+    font-style:italic;
+    font-size:clamp(19px, 3vw, 26px);
+    color:var(--text-mute);
+    text-shadow:0 2px 20px rgba(0,0,0,.5);
+  }
+
+  .essay{
+    max-width:680px;
+    max-height:78vh;
+    overflow-y:auto;
+    padding:8px 6px 8px 0;
+    text-align:left;
+  }
+  .essay p{
+    font-family:'Manrope', sans-serif;
+    font-weight:400;
+    font-size:clamp(15px, 1.9vw, 17.5px);
+    line-height:1.75;
+    color:var(--text-main);
+    text-shadow:0 2px 18px rgba(0,0,0,.5);
+    margin-bottom:18px;
+  }
+  .essay p:last-child{ margin-bottom:0; }
+  .essay::-webkit-scrollbar{ width:5px; }
+  .essay::-webkit-scrollbar-thumb{ background:rgba(255,255,255,.15); border-radius:4px; }
+
+  .hero-text{
+    font-family:'Manrope', sans-serif;
+    font-weight:800;
+    font-size:clamp(26px, 4.6vw, 44px);
+    letter-spacing:.01em;
+    color:#ffffff;
+    text-shadow:0 2px 28px rgba(0,0,0,.65);
+  }
+
+  /* ---------- playlist page ---------- */
+  .playlist{
+    width:100%;
+    max-width:460px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .playlist-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:6px;
+  }
+  .playlist-title{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    color:var(--ember);
+  }
+
+  .volume{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .vol-icon{ font-size:14px; opacity:.7; flex:none; }
+  .vol-range{ width:84px; }
+
+  .track{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:14px 18px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
+    text-align:left;
+    transition:border-color .25s ease, background .25s ease;
+  }
+  .track.playing{
+    border-color:var(--ember-dim);
+    background:linear-gradient(180deg, rgba(201,143,86,.14), rgba(201,143,86,.03));
+  }
+
+  .play-btn{
+    appearance:none;
+    flex:none;
+    width:40px; height:40px;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.04);
+    color:var(--text-main);
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px;
+    cursor:pointer;
+    transition:border-color .25s ease, color .25s ease;
+  }
+  .play-btn:hover{ border-color:rgba(255,255,255,.3); }
+  .play-btn:disabled{ cursor:default; opacity:.5; }
+  .play-btn:disabled:hover{ border-color:var(--line); }
+
+  .track-pending{ opacity:.55; }
+  .track-pending .seek{ cursor:default; }
+  .track-pending .time-total{ color:var(--text-mute); font-style:italic; }
+  .track.playing .play-btn{
+    border-color:var(--ember);
+    color:var(--ember);
+  }
+
+  .track-body{ flex:1; min-width:0; }
+  .track-top{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    margin-bottom:9px;
+  }
+  .track-name{
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--text-main);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .track-artist{
+    font-size:12.5px;
+    color:var(--text-mute);
+    flex:1;
+    min-width:0;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .scrub{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .time{
+    flex:none;
+    font-size:11px;
+    font-variant-numeric:tabular-nums;
+    color:var(--text-mute);
+    width:32px;
+  }
+  .time-total{ text-align:right; }
+
+  input[type="range"]{
+    -webkit-appearance:none;
+    appearance:none;
+    height:3px;
+    border-radius:2px;
+    background:rgba(255,255,255,.12);
+    outline:none;
+    cursor:pointer;
+  }
+  .seek{ flex:1; min-width:0; }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:11px; height:11px;
+    border-radius:50%;
+    background:var(--ember);
+    box-shadow:0 0 6px rgba(201,143,86,.6);
+    cursor:pointer;
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:11px; height:11px;
+    border:none;
+    border-radius:50%;
+    background:var(--ember);
+    box-shadow:0 0 6px rgba(201,143,86,.6);
+    cursor:pointer;
+  }
+  input[type="range"]::-moz-range-track{
+    height:3px;
+    border-radius:2px;
+    background:rgba(255,255,255,.12);
+  }
+
+  .eq{
+    flex:none;
+    display:flex;
+    align-items:flex-end;
+    gap:3px;
+    height:12px;
+    margin-left:auto;
+    opacity:0;
+    transition:opacity .25s ease;
+  }
+  .track.playing .eq{ opacity:1; }
+  .eq span{
+    width:3px;
+    background:var(--ember);
+    border-radius:2px;
+    animation:eq-bounce 1s ease-in-out infinite;
+  }
+  .eq span:nth-child(1){ animation-delay:0s; }
+  .eq span:nth-child(2){ animation-delay:.2s; }
+  .eq span:nth-child(3){ animation-delay:.4s; }
+  @keyframes eq-bounce{
+    0%,100%{ height:3px; }
+    50%{ height:12px; }
+  }
+
+  @media (max-width:700px){
+    .badges{ flex-direction:column; align-items:center; gap:10px; padding-top:22px; }
+    .left-stack{ position:static; order:-1; align-items:center; margin-bottom:4px; }
+    .right-stack{ position:static; order:3; align-items:center; margin-top:8px; }
+    .badge{ padding:12px 20px; font-size:13.5px; border-radius:14px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .page{ transition:opacity .25s linear; transform:none; }
+    .eq span{ animation:none; height:10px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg"></div>
+  <div class="snow">
+      <span class="flake" style="left:32.4%; width:2.2px; height:2.2px; animation-delay:2.1s; animation-duration:15.5s; opacity:0.53; --drift:3.0px;"></span>
+      <span class="flake" style="left:5.8%; width:3.3px; height:3.3px; animation-delay:7.1s; animation-duration:9.4s; opacity:0.4; --drift:-34.0px;"></span>
+      <span class="flake" style="left:42.5%; width:2.7px; height:2.7px; animation-delay:11.6s; animation-duration:10.2s; opacity:0.82; --drift:10.0px;"></span>
+      <span class="flake" style="left:57.7%; width:2.1px; height:2.1px; animation-delay:5.6s; animation-duration:18.8s; opacity:0.49; --drift:29.0px;"></span>
+      <span class="flake" style="left:14.4%; width:4.4px; height:4.4px; animation-delay:1.6s; animation-duration:12.1s; opacity:0.64; --drift:-26.0px;"></span>
+      <span class="flake" style="left:63.9%; width:2.2px; height:2.2px; animation-delay:5.2s; animation-duration:14.5s; opacity:0.45; --drift:-35.0px;"></span>
+      <span class="flake" style="left:68.0%; width:3.8px; height:3.8px; animation-delay:6.0s; animation-duration:12.1s; opacity:0.5; --drift:-4.0px;"></span>
+      <span class="flake" style="left:79.4%; width:3.7px; height:3.7px; animation-delay:9.8s; animation-duration:11.4s; opacity:0.79; --drift:2.0px;"></span>
+      <span class="flake" style="left:72.9%; width:2.4px; height:2.4px; animation-delay:4.0s; animation-duration:18.8s; opacity:0.73; --drift:-7.0px;"></span>
+      <span class="flake" style="left:15.2%; width:4.0px; height:4.0px; animation-delay:6.8s; animation-duration:9.4s; opacity:0.64; --drift:21.0px;"></span>
+      <span class="flake" style="left:87.5%; width:3.8px; height:3.8px; animation-delay:4.4s; animation-duration:16.0s; opacity:0.58; --drift:6.0px;"></span>
+      <span class="flake" style="left:84.0%; width:4.0px; height:4.0px; animation-delay:13.2s; animation-duration:13.7s; opacity:0.7; --drift:-35.0px;"></span>
+      <span class="flake" style="left:64.7%; width:2.9px; height:2.9px; animation-delay:13.9s; animation-duration:17.2s; opacity:0.68; --drift:-9.0px;"></span>
+      <span class="flake" style="left:2.3%; width:2.4px; height:2.4px; animation-delay:6.5s; animation-duration:10.7s; opacity:0.73; --drift:-35.0px;"></span>
+      <span class="flake" style="left:12.9%; width:4.6px; height:4.6px; animation-delay:3.5s; animation-duration:12.9s; opacity:0.57; --drift:-34.0px;"></span>
+      <span class="flake" style="left:54.9%; width:4.6px; height:4.6px; animation-delay:12.4s; animation-duration:17.2s; opacity:0.56; --drift:-18.0px;"></span>
+      <span class="flake" style="left:35.9%; width:2.5px; height:2.5px; animation-delay:12.4s; animation-duration:18.6s; opacity:0.47; --drift:-26.0px;"></span>
+      <span class="flake" style="left:23.3%; width:2.8px; height:2.8px; animation-delay:6.8s; animation-duration:14.9s; opacity:0.56; --drift:-40.0px;"></span>
+      <span class="flake" style="left:36.9%; width:4.1px; height:4.1px; animation-delay:7.9s; animation-duration:18.5s; opacity:0.66; --drift:1.0px;"></span>
+      <span class="flake" style="left:67.6%; width:4.3px; height:4.3px; animation-delay:0.8s; animation-duration:18.0s; opacity:0.75; --drift:30.0px;"></span>
+      <span class="flake" style="left:39.2%; width:3.9px; height:3.9px; animation-delay:5.6s; animation-duration:10.0s; opacity:0.38; --drift:-35.0px;"></span>
+      <span class="flake" style="left:20.9%; width:2.2px; height:2.2px; animation-delay:2.3s; animation-duration:12.4s; opacity:0.43; --drift:-40.0px;"></span>
+      <span class="flake" style="left:10.1%; width:4.6px; height:4.6px; animation-delay:5.1s; animation-duration:9.3s; opacity:0.42; --drift:9.0px;"></span>
+      <span class="flake" style="left:25.2%; width:2.4px; height:2.4px; animation-delay:4.9s; animation-duration:12.6s; opacity:0.85; --drift:28.0px;"></span>
+      <span class="flake" style="left:46.6%; width:2.3px; height:2.3px; animation-delay:6.8s; animation-duration:9.9s; opacity:0.48; --drift:-13.0px;"></span>
+      <span class="flake" style="left:82.9%; width:4.9px; height:4.9px; animation-delay:2.3s; animation-duration:9.2s; opacity:0.42; --drift:2.0px;"></span>
+      <span class="flake" style="left:54.3%; width:4.9px; height:4.9px; animation-delay:0.4s; animation-duration:14.3s; opacity:0.7; --drift:29.0px;"></span>
+      <span class="flake" style="left:26.1%; width:4.3px; height:4.3px; animation-delay:5.1s; animation-duration:10.7s; opacity:0.74; --drift:3.0px;"></span>
+      <span class="flake" style="left:33.0%; width:5.0px; height:5.0px; animation-delay:3.1s; animation-duration:17.1s; opacity:0.75; --drift:28.0px;"></span>
+      <span class="flake" style="left:81.8%; width:3.6px; height:3.6px; animation-delay:10.4s; animation-duration:11.3s; opacity:0.36; --drift:-12.0px;"></span>
+  </div>
+  <div class="vignette"></div>
+
+  <nav class="badges">
+    <div class="left-stack">
+      <button class="badge accent active" data-page="bio" data-label="bio @nevalawka"><span class="dot"></span>bio @nevalawka</button>
+      <a class="badge yt" id="ytLink" href="https://www.youtube.com/@nevadodep" target="_blank" rel="noopener noreferrer" aria-label="YouTube канал">
+        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M8 5v14l11-7z"/></svg>
+        YouTube
+      </a>
+      <span class="yt-toast" id="ytToast">ссылка скопирована</span>
+    </div>
+    <div class="badge-group">
+      <button class="badge" data-page="content" data-label="контент жизни">контент жизни</button>
+      <button class="badge" data-page="calm" data-label="ненавижу тебя">ненавижу тебя</button>
+      <button class="badge" data-page="lll" data-label="мой плейлист">мой плейлист</button>
+    </div>
+    <div class="right-stack">
+      <span class="right-stack-label">играю только здесь</span>
+      <div class="ip-badges">
+        <button type="button" class="ip-badge" data-ip="cis.lollipopmc.net"><span class="ip-dot"></span>cis.lollipopmc.net<span class="copy-mark">⧉</span></button>
+        <button type="button" class="ip-badge" data-ip="mc.crystalium.fun"><span class="ip-dot"></span>mc.crystalium.fun<span class="copy-mark">⧉</span></button>
+      </div>
+      <span class="ip-toast" id="ipToast">IP скопирован</span>
+    </div>
+  </nav>
+
+  <div class="pages">
+    <section class="page show" id="bio">
+      <div class="essay">
+        <p>Делал этот сайтик для себя и для общего пользования, кому интересно было зайти в мой профиль. Если вам действительно захотелось прочитать всю информацию, то рекомендую включить для начала мой плейлист, я слушаю только имбульку. Надеюсь, в каких-то планах я даже помог вам узнать что-то новое. Люблю вас, ребятки &lt;3</p>
+      </div>
+    </section>
+
+    <section class="page" id="content">
+      <p class="page-text">Видеозаписи и скриншоты пока не добавлены.</p>
+    </section>
+
+    <section class="page" id="calm">
+      <div class="essay">
+        <p>Я ненавижу моменты, когда мне приходится спрашивать: «А можно с вами?», «Подождите меня, пожалуйста», «Почему меня не позвали?», «А мне расскажите?». Ненавижу это ощущение, когда ты вроде бы находишься среди людей, но внутри чувствуешь себя чужим. Будто ты не часть компании, а человек, который постоянно должен напоминать о своём существовании.</p>
+        <p>Каждый раз, когда я задаю эти вопросы, внутри появляется странное чувство пустоты. Начинаешь думать: «Почему обо мне забыли?», «Почему я должен проситься туда, где мне вроде бы должны быть рады?». Становится грустно от того, что иногда приходится бороться за внимание людей, которые должны сами хотеть видеть тебя рядом.</p>
+        <p>Самое тяжёлое — когда это повторяется снова и снова. Когда каждый день ты сталкиваешься с ощущением, что другим проще проводить время без тебя. Со временем чувствуешь себя ненужным и одиноким даже среди друзей.</p>
+        <p>Но настоящая дружба не должна вызывать такие чувства. В дружбе не должно быть постоянного страха: «А меня точно хотят видеть?», «А мне можно присоединиться?». Настоящие друзья не заставляют человека каждый раз просить место рядом с ними. Они сами зовут, интересуются, ждут и показывают, что твоё присутствие для них важно.</p>
+      </div>
+    </section>
+
+    <section class="page" id="lll">
+      <div class="playlist">
+        <div class="playlist-head">
+          <p class="playlist-title">мой плейлист</p>
+          <div class="volume">
+            <span class="vol-icon">🔊</span>
+            <input type="range" class="vol-range" min="0" max="100" value="80" aria-label="Громкость">
+          </div>
+        </div>
+
+        <div class="track" data-track="1">
+          <button class="play-btn" type="button">▶</button>
+          <div class="track-body">
+            <div class="track-top">
+              <span class="track-name">Урод</span>
+              <span class="track-artist">Cupsize</span>
+              <span class="eq"><span></span><span></span><span></span></span>
+            </div>
+            <div class="scrub">
+              <span class="time time-cur">0:00</span>
+              <input type="range" class="seek" min="0" max="100" value="0" step="0.1">
+              <span class="time time-total">0:00</span>
+            </div>
+          </div>
+          <audio class="audio-el" src="track1.mp3" preload="metadata"></audio>
+        </div>
+
+        <div class="track" data-track="2">
+          <button class="play-btn" type="button">▶</button>
+          <div class="track-body">
+            <div class="track-top">
+              <span class="track-name">Это прекрасно</span>
+              <span class="track-artist">Cupsize</span>
+              <span class="eq"><span></span><span></span><span></span></span>
+            </div>
+            <div class="scrub">
+              <span class="time time-cur">0:00</span>
+              <input type="range" class="seek" min="0" max="100" value="0" step="0.1">
+              <span class="time time-total">0:00</span>
+            </div>
+          </div>
+          <audio class="audio-el" src="track2.mp3" preload="metadata"></audio>
+        </div>
+
+        <div class="track track-pending" data-track="3">
+          <button class="play-btn" type="button" disabled aria-disabled="true">▶</button>
+          <div class="track-body">
+            <div class="track-top">
+              <span class="track-name">stalk ur socials</span>
+              <span class="track-artist">s0rrow</span>
+            </div>
+            <div class="scrub">
+              <span class="time time-cur">—:—</span>
+              <input type="range" class="seek" min="0" max="100" value="0" step="0.1" disabled>
+              <span class="time time-total">скоро</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="track track-pending" data-track="4">
+          <button class="play-btn" type="button" disabled aria-disabled="true">▶</button>
+          <div class="track-body">
+            <div class="track-top">
+              <span class="track-name">Демоны</span>
+              <span class="track-artist">Три дня дождя</span>
+            </div>
+            <div class="scrub">
+              <span class="time time-cur">—:—</span>
+              <input type="range" class="seek" min="0" max="100" value="0" step="0.1" disabled>
+              <span class="time time-total">скоро</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="track track-pending" data-track="5">
+          <button class="play-btn" type="button" disabled aria-disabled="true">▶</button>
+          <div class="track-body">
+            <div class="track-top">
+              <span class="track-name">Я устал</span>
+              <span class="track-artist">1.Kla$</span>
+            </div>
+            <div class="scrub">
+              <span class="time time-cur">—:—</span>
+              <input type="range" class="seek" min="0" max="100" value="0" step="0.1" disabled>
+              <span class="time time-total">скоро</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+<script>
+  // nav switching
+  const badges = document.querySelectorAll('.badge[data-page]');
+  const pages  = document.querySelectorAll('.page');
+
+  badges.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.page;
+
+      badges.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      btn.classList.remove('pressed');
+      void btn.offsetWidth;
+      btn.classList.add('pressed');
+
+      pages.forEach(p => p.classList.toggle('show', p.id === target));
+    });
+  });
+
+  // ---------- playlist — full player ----------
+  function formatTime(sec){
+    if (!isFinite(sec) || sec < 0) sec = 0;
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return m + ':' + String(s).padStart(2, '0');
+  }
+
+  const tracks = Array.from(document.querySelectorAll('.track:not(.track-pending)'));
+
+  const players = tracks.map(track => ({
+    track,
+    audio:   track.querySelector('.audio-el'),
+    btn:     track.querySelector('.play-btn'),
+    seek:    track.querySelector('.seek'),
+    curEl:   track.querySelector('.time-cur'),
+    totalEl: track.querySelector('.time-total'),
+    seeking: false
+  }));
+
+  // shared volume control
+  const volRange = document.querySelector('.vol-range');
+  let currentVolume = (volRange ? volRange.value : 80) / 100;
+  players.forEach(p => { p.audio.volume = currentVolume; });
+  if (volRange) {
+    volRange.addEventListener('input', () => {
+      currentVolume = volRange.value / 100;
+      players.forEach(p => { p.audio.volume = currentVolume; });
+    });
+  }
+
+  function resetPlayer(p){
+    p.audio.pause();
+    p.audio.currentTime = 0;
+    p.track.classList.remove('playing');
+    p.btn.textContent = '▶';
+    p.seek.value = 0;
+    p.curEl.textContent = '0:00';
+  }
+
+  function playPlayer(p){
+    p.audio.play();
+    p.track.classList.add('playing');
+    p.btn.textContent = '❚❚';
+  }
+
+  function pausePlayer(p){
+    p.audio.pause();
+    p.track.classList.remove('playing');
+    p.btn.textContent = '▶';
+  }
+
+  players.forEach((p, i) => {
+    function syncDuration(){
+      if (isFinite(p.audio.duration) && p.audio.duration > 0) {
+        if (p.seek.max != p.audio.duration) p.seek.max = p.audio.duration;
+        p.totalEl.textContent = formatTime(p.audio.duration);
+      }
+    }
+    p.audio.addEventListener('loadedmetadata', syncDuration);
+    p.audio.addEventListener('durationchange', syncDuration);
+
+    p.audio.addEventListener('timeupdate', () => {
+      syncDuration();
+      if (p.seeking) return;
+      p.seek.value = p.audio.currentTime;
+      p.curEl.textContent = formatTime(p.audio.currentTime);
+    });
+
+    p.audio.addEventListener('ended', () => {
+      resetPlayer(p);
+      const next = players[i + 1];
+      if (next) {
+        playPlayer(next);
+      }
+    });
+
+    // scrubbing
+    p.seek.addEventListener('input', () => {
+      p.seeking = true;
+      p.curEl.textContent = formatTime(p.seek.value);
+    });
+    p.seek.addEventListener('change', () => {
+      p.audio.currentTime = p.seek.value;
+      p.seeking = false;
+    });
+
+    // play / pause
+    p.btn.addEventListener('click', () => {
+      const isPlaying = p.track.classList.contains('playing');
+
+      // switching to a different track resets every other track to 0
+      players.forEach(other => {
+        if (other !== p && (other.audio.currentTime > 0 || !other.audio.paused)) {
+          resetPlayer(other);
+        }
+      });
+
+      if (isPlaying) {
+        pausePlayer(p);
+      } else {
+        playPlayer(p);
+      }
+    });
+  });
+
+  // playback intentionally continues across page/badge switches —
+  // it only stops when the person pauses it or leaves the site.
+
+  // YouTube badge — copies the link as a fallback, in addition to the normal navigation
+  const ytLink = document.getElementById('ytLink');
+  const ytToast = document.getElementById('ytToast');
+  if (ytLink) {
+    ytLink.addEventListener('click', () => {
+      const url = ytLink.href;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+          if (ytToast) {
+            ytToast.classList.add('show');
+            setTimeout(() => ytToast.classList.remove('show'), 2200);
+          }
+        }).catch(() => {});
+      }
+    });
+  }
+
+  // Minecraft server IPs — click to copy
+  const ipToast = document.getElementById('ipToast');
+  document.querySelectorAll('.ip-badge').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ip = btn.dataset.ip;
+      if (!navigator.clipboard || !navigator.clipboard.writeText) return;
+      navigator.clipboard.writeText(ip).then(() => {
+        btn.classList.add('copied');
+        setTimeout(() => btn.classList.remove('copied'), 1500);
+        if (ipToast) {
+          ipToast.textContent = ip + ' скопирован';
+          ipToast.classList.add('show');
+          setTimeout(() => ipToast.classList.remove('show'), 2000);
+        }
+      }).catch(() => {});
+    });
+  });
+</script>
+
+</body>
+</html>
